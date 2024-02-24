@@ -1,13 +1,32 @@
-version: "3.8"
-
+version: '3.7'
 services:
-  go:
-    container_name: air_sample
-    volumes:
-      - ./:/project/
-    working_dir: /project
-    tty: true
-    build: "./"
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
     ports:
-      - 8080:8080
+      - "8080:8080"
+    volumes:
+      - "./:/app"
+    security_opt:
+      - seccomp:unconfined
+    depends_on:
+      - db
+    environment:
+      DB_PORT: 3306
+      DB_NAME: docker_gin
+      DB_USER: root
+      DB_PASSWORD: password
     command: sh -c 'go mod tidy && air'
+  db:
+    platform: linux/x86_64 #for m1Tip
+    image: mysql:8.0.25
+    environment:
+      MYSQL_DATABASE: docker_gin
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data/mysql:/var/lib/mysql:cached
+      - ./db/my.cnf:/etc/mysql/conf.d/my.cnf

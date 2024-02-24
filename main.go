@@ -1,13 +1,17 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"DockerGin/src/infrastructure/db"
+	"DockerGin/src/infrastructure/logging"
+	"DockerGin/src/infrastructure/router"
+)
 
 func main() {
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong updated",
-		})
-	})
-	r.Run()
+	logger := logging.NewLogger("development")
+	logger.Debug("debug log")
+
+	sqlhandler := db.New()
+	defer sqlhandler.Conn.Close()
+
+	router.Dispatch(sqlhandler)
 }
